@@ -8,7 +8,7 @@ import android.os.IBinder;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class FloatWidgeteService extends Service {
+public class FloatWidgetService extends Service {
 
     /**
      * 用于在线程中创建或移除悬浮窗。
@@ -20,14 +20,13 @@ public class FloatWidgeteService extends Service {
      */
     private Timer timer;
 
-    public FloatWidgeteService() {
+    public FloatWidgetService() {
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
-
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {

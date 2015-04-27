@@ -1,15 +1,17 @@
 package com.nexgo.floatwidget;
 
-import android.app.ActivityManager;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.graphics.PixelFormat;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.view.Gravity;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.util.Calendar;
 
 /**
  * @author duxd
@@ -19,8 +21,6 @@ public class StatusWindowManager {
     private static StatusView statusWindow;
     private static WindowManager.LayoutParams statusWindowParams;
     private static WindowManager mWindowManager;
-    private static ActivityManager mActivityManager;
-
 
     public static boolean isWindowShowing() {
         return statusWindow != null;
@@ -42,7 +42,7 @@ public class StatusWindowManager {
                 statusWindowParams.width = StatusView.viewWidth;
                 statusWindowParams.height = StatusView.viewHeight;
                 statusWindowParams.x = screenWidth;
-                statusWindowParams.y = screenHeight / 2;
+                statusWindowParams.y = screenHeight;
             }
             statusWindow.setParams(statusWindowParams);
             windowManager.addView(statusWindow, statusWindowParams);
@@ -56,38 +56,93 @@ public class StatusWindowManager {
         return mWindowManager;
     }
 
-    private static ActivityManager getActivityManager(Context context) {
-        if (mActivityManager == null) {
-            mActivityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        }
-        return mActivityManager;
-    }
-
     public static void updateTime(final Context context) {
+        if (statusWindow != null) {
+            TextView datetime = (TextView) statusWindow.findViewById(R.id.datetime);
+            datetime.setText(getDateTime(context));
 
-    }
+            BluetoothAdapter bta = BluetoothAdapter.getDefaultAdapter();
+            ImageView bt = (ImageView) statusWindow.findViewById(R.id.bluetooth);
+            if (bta != null && bta.isEnabled()) {
+                bt.setImageResource(R.drawable.stat_sys_data_bluetooth_connected);
+            } else {
+                bt.setImageResource(R.drawable.stat_sys_data_bluetooth);
+            }
 
-    private static long getAvailableMemory(Context context) {
-        ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
-        getActivityManager(context).getMemoryInfo(mi);
-        return mi.availMem;
-    }
-
-    public static String getUsedPercentValue(final Context context) {
-        String dir = "/proc/meminfo";
-        try {
-            FileReader fr = new FileReader(dir);
-            BufferedReader br = new BufferedReader(fr, 2048);
-            String memoryLine = br.readLine();
-            String subMemoryLine = memoryLine.substring(memoryLine.indexOf("MemTotal:"));
-            br.close();
-            long totalMemorySize = Integer.parseInt(subMemoryLine.replaceAll("\\D+", ""));
-            long availableSize = getAvailableMemory(context) / 1024;
-            int percent = (int) ((totalMemorySize - availableSize) / (float) totalMemorySize * 100);
-            return "" + percent + "%";
-        } catch (IOException e) {
-            e.printStackTrace();
+            WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            WifiInfo info = wifi.getConnectionInfo();
+            int level=WifiManager.calculateSignalLevel(info.getRssi(), 5);
+            ImageView wifiimg = (ImageView) statusWindow.findViewById(R.id.wifi);
+            switch (level) {
+                case 0:
+                    wifiimg.setImageResource(R.drawable.stat_sys_wifi_signal_null);
+                    break;
+                case 1:
+                    wifiimg.setImageResource(R.drawable.stat_sys_wifi_signal_1_fully);
+                    break;
+                case 2:
+                    wifiimg.setImageResource(R.drawable.stat_sys_wifi_signal_2_fully);
+                    break;
+                case 3:
+                    wifiimg.setImageResource(R.drawable.stat_sys_wifi_signal_3_fully);
+                    break;
+                case 4:
+                    wifiimg.setImageResource(R.drawable.stat_sys_wifi_signal_4_fully);
+                    break;
+            }
         }
-        return "悬浮窗";
+    }
+
+    public static String getDateTime(final Context context) {
+        Calendar cal = Calendar.getInstance();
+        int tmp;
+        StringBuffer sb = new StringBuffer(19);
+        sb.append(cal.get(Calendar.YEAR));
+        sb.append("-");
+        tmp = cal.get(Calendar.MONTH) + 1;
+        if (tmp > 9) {
+            sb.append(tmp);
+        } else {
+            sb.append(0);
+            sb.append(tmp);
+        }
+
+        sb.append("-");
+        tmp = cal.get(Calendar.DATE);
+        if (tmp > 9) {
+            sb.append(tmp);
+        } else {
+            sb.append(0);
+            sb.append(tmp);
+        }
+
+        sb.append(" ");
+        tmp = cal.get(Calendar.HOUR_OF_DAY);
+        if (tmp > 9) {
+            sb.append(tmp);
+        } else {
+            sb.append(0);
+            sb.append(tmp);
+        }
+
+        sb.append(":");
+        tmp = cal.get(Calendar.MINUTE);
+        if (tmp > 9) {
+            sb.append(tmp);
+        } else {
+            sb.append(0);
+            sb.append(tmp);
+        }
+
+        sb.append(":");
+        tmp = cal.get(Calendar.SECOND);
+        if (tmp > 9) {
+            sb.append(tmp);
+        } else {
+            sb.append(0);
+            sb.append(tmp);
+        }
+
+        return sb.toString();
     }
 }

@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -35,8 +36,13 @@ public class StatusView extends LinearLayout {
         View view = findViewById(R.id.small_window_layout);
         viewWidth = view.getLayoutParams().width;
         viewHeight = view.getLayoutParams().height;
-        TextView percentView = (TextView) findViewById(R.id.percent);
-        percentView.setText(StatusWindowManager.getUsedPercentValue(context));
+        TextView datetime = (TextView) findViewById(R.id.datetime);
+        datetime.setText(StatusWindowManager.getDateTime(context));
+
+        ImageView wifi = (ImageView) findViewById(R.id.wifi);
+        wifi.setImageResource(R.drawable.stat_sys_wifi_signal_null);
+        ImageView bt = (ImageView) findViewById(R.id.bluetooth);
+        bt.setImageResource(R.drawable.stat_sys_data_bluetooth);
     }
 
     public void setParams(WindowManager.LayoutParams params) {
